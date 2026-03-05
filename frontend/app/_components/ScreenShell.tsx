@@ -73,7 +73,7 @@ export default function ScreenShell({
             </Link>
             <Link
               className="nav-item nav-item-center"
-              href={withParams("/home")}
+              href={withParams("/bot")}
               aria-label="Chat Bot"
             >
               <div className="nav-dot nav-dot-center" />

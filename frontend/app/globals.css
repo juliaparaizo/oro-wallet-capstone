@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
 :root {
   color-scheme: light;
   --bg: #f6f2ee;
@@ -572,6 +574,8 @@ main {
   font-size: 11px;
   font-weight: 600;
   position: relative;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .calendar-day.is-muted {
@@ -583,6 +587,38 @@ main {
   background: #4c2c82;
   color: #fff;
   box-shadow: 0 8px 16px rgba(76, 44, 130, 0.25);
+}
+
+.calendar-day.is-selected {
+  background: #6a42a9;
+  color: #fff;
+  box-shadow: 0 10px 18px rgba(94, 56, 160, 0.28);
+  transform: translateY(-2px);
+}
+
+.calendar-actions {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 14px;
+}
+
+.calendar-panel {
+  background: #f7f3ff;
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.calendar-txn-list {
+  display: grid;
+  gap: 6px;
+}
+
+.calendar-txn-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #4a425e;
 }
 
 .calendar-dots {
@@ -985,3 +1021,271 @@ main {
 
 .g1 { background: #5a2b8a; }
 .g2 { background: #c0a3ea; }
+
+.bot-page {
+  display: grid;
+  gap: 18px;
+  font-family: "Space Grotesk", "Poppins", system-ui, sans-serif;
+}
+
+.bot-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #f6efe6 0%, #f2e0d1 45%, #e9d9ff 100%);
+  border: 1px solid rgba(90, 43, 138, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.bot-hero h2 {
+  font-family: "Fraunces", "Space Grotesk", serif;
+  font-size: 26px;
+  margin-top: 6px;
+}
+
+.bot-hero p {
+  color: #5a5864;
+  font-size: 13px;
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.bot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(90, 43, 138, 0.12);
+  color: #3b1d61;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.bot-orb {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f3dcff 40%, #6a30b7 100%);
+  box-shadow: 0 18px 30px rgba(48, 16, 80, 0.35);
+  position: relative;
+}
+
+.bot-orb-ring {
+  position: absolute;
+  inset: -16px;
+  border-radius: 50%;
+  border: 1px dashed rgba(90, 43, 138, 0.4);
+  animation: orbit 10s linear infinite;
+}
+
+@keyframes orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bot-insights {
+  display: grid;
+  gap: 10px;
+}
+
+.bot-insight-card {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #efe6dd;
+  box-shadow: 0 12px 20px rgba(39, 24, 12, 0.06);
+}
+
+.bot-insight-card span {
+  color: #8a8896;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.bot-insight-card strong {
+  display: block;
+  font-size: 20px;
+  margin: 6px 0 4px;
+  color: #2a1a3a;
+}
+
+.bot-insight-card p {
+  font-size: 12px;
+  color: #6d6a78;
+}
+
+.bot-chat {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #ece7e2;
+  box-shadow: 0 16px 26px rgba(29, 18, 6, 0.08);
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.bot-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.bot-chat-header h3 {
+  font-size: 15px;
+}
+
+.bot-chat-header span {
+  display: block;
+  color: #8a8896;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.bot-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #5a2b8a, #b081d9);
+  display: grid;
+  place-items: center;
+}
+
+.bot-avatar-core {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.bot-messages {
+  display: grid;
+  gap: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+.bot-message {
+  max-width: 85%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.bot-message-assistant {
+  background: #f5f0fb;
+  border: 1px solid #e4d7f5;
+  color: #2a1a3a;
+}
+
+.bot-message-user {
+  background: #2b1a3b;
+  color: #ffffff;
+  justify-self: end;
+}
+
+.bot-typing {
+  display: flex;
+  gap: 6px;
+}
+
+.bot-typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6b4b8d;
+  animation: pulse 1.4s infinite ease-in-out;
+}
+
+.bot-typing span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.bot-typing span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+.bot-quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.bot-chip {
+  border: 1px solid #e2d6f0;
+  border-radius: 999px;
+  background: #faf7ff;
+  padding: 6px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  color: #3b1d61;
+}
+
+.bot-chip:hover {
+  background: #f1e7ff;
+}
+
+.bot-input {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  background: #f8f3ef;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid #efe6dd;
+}
+
+.bot-input input {
+  border: none;
+  background: transparent;
+  font-size: 12.5px;
+  outline: none;
+}
+
+.bot-input button {
+  border: none;
+  background: #5a2b8a;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bot-input button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.bot-error {
+  color: #b00020;
+  font-size: 12px;
+}

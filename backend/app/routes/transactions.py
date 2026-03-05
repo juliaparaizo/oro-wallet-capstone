@@ -17,6 +17,9 @@ class CreateTransaction(BaseModel):
     date: str
     category: str | None = None
     currency: Optional[str] = None
+    source: Optional[str] = None
+    plaidPrimary: Optional[str] = None
+    plaidDetailed: Optional[str] = None
 
 
 class Transaction(BaseModel):
@@ -27,6 +30,9 @@ class Transaction(BaseModel):
     date: str
     category: str | None = None
     currency: Optional[str] = None
+    source: Optional[str] = None
+    plaidPrimary: Optional[str] = None
+    plaidDetailed: Optional[str] = None
 
 
 class TransactionsResponse(BaseModel):
@@ -60,6 +66,12 @@ def create_transaction(payload: CreateTransaction):
         }
         if payload.currency:
             item["currency"] = payload.currency
+        if payload.source:
+            item["source"] = payload.source
+        if payload.plaidPrimary:
+            item["plaidPrimary"] = payload.plaidPrimary
+        if payload.plaidDetailed:
+            item["plaidDetailed"] = payload.plaidDetailed
         table.put_item(Item=item)
     except Exception as exc:  # pragma: no cover - surfaces to caller
         raise HTTPException(status_code=500, detail=str(exc)) from exc

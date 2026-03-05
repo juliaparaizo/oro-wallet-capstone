@@ -3,3 +3,7 @@ uvicorn==0.30.6
 boto3==1.35.21
 pydantic-settings==2.4.0
 email-validator==2.2.0
+openai==2.17.0
+flask==3.0.3
+plaid-python==15.0.0
+python-dotenv==1.0.1

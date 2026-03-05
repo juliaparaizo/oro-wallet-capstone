@@ -30,6 +30,10 @@ def get_users_table():
     return get_dynamodb_resource().Table(settings.users_table)
 
 
+def get_plaid_items_table():
+    return get_dynamodb_resource().Table(settings.plaid_items_table)
+
+
 def _serialize_value(value: Any) -> Any:
     if isinstance(value, Decimal):
         return float(value)
