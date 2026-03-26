@@ -112,14 +112,6 @@ export default function GraphsPage() {
   }, [userId]);
 
   const now = new Date();
-  const lastSixMonths = useMemo(() => {
-    const list: Date[] = [];
-    for (let i = 5; i >= 0; i -= 1) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      list.push(d);
-    }
-    return list;
-  }, [now]);
 
   const normalized = useMemo(() => {
     return transactions
@@ -145,6 +137,22 @@ export default function GraphsPage() {
   }, [normalized, now]);
   const currentMonthKey = inferredMonthKey;
 
+  const anchorMonth = useMemo(() => {
+    if (normalized.length === 0) return now;
+    return normalized
+      .map((t) => t.dateObj as Date)
+      .sort((a, b) => b.getTime() - a.getTime())[0];
+  }, [normalized, now]);
+
+  const lastSixMonths = useMemo(() => {
+    const list: Date[] = [];
+    for (let i = 5; i >= 0; i -= 1) {
+      const d = new Date(anchorMonth.getFullYear(), anchorMonth.getMonth() - i, 1);
+      list.push(d);
+    }
+    return list;
+  }, [anchorMonth]);
+
   const categoryTotals = useMemo(() => {
     const totals = new Map<string, number>();
     for (const t of normalized) {
@@ -158,6 +166,7 @@ export default function GraphsPage() {
 
   const topCategories = categoryTotals.slice(0, 5);
   const categorySum = topCategories.reduce((acc, cur) => acc + cur.total, 0);
+  const topCategoryMax = Math.max(1, ...topCategories.map((category) => category.total));
 
   const monthlyTotals = useMemo(() => {
     const totals = new Map<string, number>();
@@ -184,6 +193,27 @@ export default function GraphsPage() {
     return entry ? entry.total : 0;
   }, [monthlyTotals, currentMonthKey]);
 
+  const categoryMix = useMemo(() => {
+    const top2 = categoryTotals.slice(0, 2);
+    const quarterMonths = lastSixMonths.slice(-3);
+    return quarterMonths.map((date) => {
+      const key = monthKey(date);
+      const entries = top2.map((category) => {
+        const total = normalized
+          .filter((transaction) => transaction.month === key && transaction.category === category.label)
+          .reduce((sum, transaction) => sum + transaction.spend, 0);
+        return { label: category.label, total };
+      });
+      const monthTotal = entries.reduce((sum, entry) => sum + entry.total, 0);
+      return {
+        key,
+        label: monthLabel(date),
+        total: monthTotal,
+        entries
+      };
+    });
+  }, [categoryTotals, lastSixMonths, normalized]);
+
   return (
     <ScreenShell title="Graphs">
       {loading && <p style={{ color: "#7b7b85" }}>Loading...</p>}
@@ -195,7 +225,7 @@ export default function GraphsPage() {
               <div className="chart-title">Spending by Category</div>
               <div className="chart-subtitle">Current month</div>
             </div>
-            <span className="chart-chip">{monthLabel(now)}</span>
+            <span className="chart-chip">{monthLabel(anchorMonth)}</span>
           </div>
           <div className="chart-body">
             <svg viewBox="0 0 120 120" className="pie">
@@ -245,6 +275,11 @@ export default function GraphsPage() {
           </div>
           <div className="chart-body">
             <div className="stacked-bars">
+              {monthlyTotals.every((m) => m.total === 0) && (
+                <div style={{ fontSize: 12, color: "#7b7b85", marginBottom: 10 }}>
+                  No spending found in the latest six months of imported data.
+                </div>
+              )}
               {monthlyTotals.map((m) => (
                 <div key={m.key} className="stacked-col">
                   <div
@@ -271,7 +306,7 @@ export default function GraphsPage() {
               {(() => {
                 const top3 = categoryTotals.slice(0, 3).map((c) => c.label);
                 const weeks = Array.from({ length: 6 }).map((_, i) => {
-                  const d = new Date(now);
+                  const d = new Date(anchorMonth);
                   d.setDate(d.getDate() - (5 - i) * 7);
                   return d;
                 });
@@ -304,6 +339,11 @@ export default function GraphsPage() {
                 });
               })()}
             </svg>
+            {categoryTotals.slice(0, 3).length === 0 && (
+              <div style={{ fontSize: 12, color: "#7b7b85" }}>
+                No category trend data found for recent imported transactions.
+              </div>
+            )}
             <div className="legend">
               {categoryTotals.slice(0, 3).map((citem, idx) => (
                 <div key={citem.label}>
@@ -325,14 +365,22 @@ export default function GraphsPage() {
           </div>
           <div className="chart-body">
             <div className="hbars">
-              {topCategories.map((citem) => (
+              {topCategories.length === 0 && (
+                <div style={{ fontSize: 12, color: "#7b7b85" }}>
+                  No category spending found for the selected month.
+                </div>
+              )}
+              {topCategories.map((citem, idx) => (
                 <div key={citem.label} className="hbar-row">
-                  <span>{citem.label}</span>
+                  <div className="hbar-label-row">
+                    <span>{citem.label}</span>
+                    <span>{formatCurrency(citem.total)}</span>
+                  </div>
                   <div className="hbar-track">
                     <div
-                      className="hbar-fill s1"
+                      className={`hbar-fill s${(idx % 4) + 1}`}
                       style={{
-                        width: `${categorySum ? (citem.total / categorySum) * 100 : 0}%`
+                        width: `${(citem.total / topCategoryMax) * 100}%`
                       }}
                     />
                   </div>
@@ -346,42 +394,36 @@ export default function GraphsPage() {
           <div className="chart-header">
             <div>
               <div className="chart-title">Category Mix</div>
-              <div className="chart-subtitle">Stacked area</div>
+              <div className="chart-subtitle">Top categories by month</div>
             </div>
             <span className="chart-chip">Quarter</span>
           </div>
           <div className="chart-body">
-            <svg viewBox="0 0 240 120" className="area-chart">
-              {(() => {
-                const top2 = categoryTotals.slice(0, 2);
-                const quarterMonths = lastSixMonths.slice(-3);
-                const totals = top2.map((citem) =>
-                  quarterMonths.map((d) => {
-                    const key = monthKey(d);
-                    return normalized
-                      .filter((t) => t.month === key && t.category === citem.label)
-                      .reduce((acc, t) => acc + t.spend, 0);
-                  })
-                );
-                const maxVal = Math.max(1, ...totals.flat());
-                return totals.map((series, idx) => {
-                  const points = series
-                    .map((val, i) => {
-                      const x = 10 + i * 100;
-                      const y = 110 - (val / maxVal) * 70;
-                      return `${x} ${y}`;
-                    })
-                    .join(" L");
-                  return (
-                    <path
-                      key={idx}
-                      className={`area a${idx + 1}`}
-                      d={`M${points} L210 110 L10 110 Z`}
-                    />
-                  );
-                });
-              })()}
-            </svg>
+            <div className="mix-grid">
+              {categoryMix.length === 0 && (
+                <div style={{ fontSize: 12, color: "#7b7b85" }}>
+                  No quarter mix data available.
+                </div>
+              )}
+              {categoryMix.map((month) => (
+                <div key={month.key} className="mix-col">
+                  <div className="mix-track">
+                    {month.entries.map((entry, idx) => (
+                      <div
+                        key={`${month.key}-${entry.label}`}
+                        className={`mix-seg s${(idx % 4) + 1}`}
+                        style={{
+                          height: `${month.total ? (entry.total / month.total) * 100 : 0}%`
+                        }}
+                        title={`${entry.label}: ${formatCurrency(entry.total)}`}
+                      />
+                    ))}
+                  </div>
+                  <div className="mix-total">{formatCurrency(month.total)}</div>
+                  <span>{month.label}</span>
+                </div>
+              ))}
+            </div>
             <div className="legend">
               {categoryTotals.slice(0, 2).map((citem, idx) => (
                 <div key={citem.label}>

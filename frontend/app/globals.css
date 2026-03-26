@@ -720,6 +720,24 @@ main {
   margin-top: 10px;
 }
 
+.planning-actions {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 14px;
+}
+
+.planning-goal-form {
+  display: grid;
+  gap: 10px;
+}
+
+.planning-goal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  align-items: end;
+}
+
 .planning-card {
   background: #fff;
   border: 1px solid #ece7e2;
@@ -754,6 +772,17 @@ main {
   background: #f1ebf8;
   color: #4c2c82;
   font-weight: 600;
+}
+
+.planning-goal-block:not(:last-child) {
+  margin-bottom: 10px;
+}
+
+.planning-goal-meta {
+  font-size: 10px;
+  color: #8d8798;
+  margin-top: -4px;
+  margin-bottom: 4px;
 }
 
 .plan-row {
@@ -904,20 +933,24 @@ main {
   grid-template-columns: repeat(6, 1fr);
   gap: 10px;
   align-items: end;
+  min-height: 120px;
 }
 
 .stacked-col {
   display: grid;
-  gap: 4px;
+  grid-template-rows: 1fr auto;
+  gap: 6px;
   align-items: end;
   justify-items: center;
   font-size: 9px;
   color: #9a9aa1;
+  min-height: 120px;
 }
 
 .stack {
   width: 18px;
   border-radius: 6px;
+  align-self: end;
 }
 
 .seg.s1 { background: #5a2b8a; }
@@ -953,8 +986,15 @@ main {
   color: #6b657a;
 }
 
+.hbar-label-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-weight: 600;
+}
+
 .hbar-track {
-  height: 8px;
+  height: 12px;
   background: #efe9f6;
   border-radius: 999px;
   overflow: hidden;
@@ -965,17 +1005,42 @@ main {
   border-radius: 999px;
 }
 
-.area-chart {
+.mix-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  align-items: end;
+}
+
+.mix-col {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  font-size: 9px;
+  color: #9a9aa1;
+}
+
+.mix-track {
   width: 100%;
+  max-width: 70px;
   height: 120px;
+  display: flex;
+  flex-direction: column-reverse;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #efe9f6;
 }
 
-.area {
-  fill-opacity: 0.7;
+.mix-seg {
+  width: 100%;
+  min-height: 0;
 }
 
-.a1 { fill: #7a4fb3; }
-.a2 { fill: #c0a3ea; }
+.mix-total {
+  font-size: 10px;
+  color: #4a465a;
+  font-weight: 600;
+}
 
 .treemap {
   display: grid;
