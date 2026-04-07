@@ -84,6 +84,17 @@ function mapCategory(raw?: string, primary?: string | null, detailed?: string | 
 export default function GraphsPage() {
   const searchParams = useSearchParams();
   const userId = useMemo(() => searchParams.get("userId") || "", [searchParams]);
+  const name = useMemo(() => searchParams.get("name") || "", [searchParams]);
+  const actionLinks = useMemo(() => {
+    const params = new URLSearchParams();
+    if (userId) params.set("userId", userId);
+    if (name) params.set("name", name);
+    const suffix = params.toString();
+    return {
+      home: suffix ? `/home?${suffix}` : "/home",
+      dashboard: suffix ? `/dashboard?${suffix}` : "/dashboard"
+    };
+  }, [userId, name]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -218,6 +229,22 @@ export default function GraphsPage() {
     <ScreenShell title="Graphs">
       {loading && <p style={{ color: "#7b7b85" }}>Loading...</p>}
       {error && <p style={{ color: "#b00020" }}>{error}</p>}
+      {!loading && !error && normalized.length === 0 && (
+        <div className="card empty-state">
+          <h3 className="empty-state-title">No data yet</h3>
+          <p className="empty-state-text">
+            Connect a bank or add your first expense to see charts and trends.
+          </p>
+          <div className="empty-state-actions">
+            <a className="button" href={actionLinks.home}>
+              Connect bank
+            </a>
+            <a className="button button-secondary" href={actionLinks.dashboard}>
+              Add expense
+            </a>
+          </div>
+        </div>
+      )}
       <div className="graphs-grid">
         <div className="chart-card">
           <div className="chart-header">
@@ -269,26 +296,50 @@ export default function GraphsPage() {
           <div className="chart-header">
             <div>
               <div className="chart-title">Monthly Spend</div>
-              <div className="chart-subtitle">Stacked bar trend</div>
+              <div className="chart-subtitle">Six-month comparison</div>
             </div>
             <span className="chart-chip">6 mo</span>
           </div>
           <div className="chart-body">
-            <div className="stacked-bars">
+            <div className="monthly-spend-grid">
               {monthlyTotals.every((m) => m.total === 0) && (
                 <div style={{ fontSize: 12, color: "#7b7b85", marginBottom: 10 }}>
                   No spending found in the latest six months of imported data.
                 </div>
               )}
-              {monthlyTotals.map((m) => (
-                <div key={m.key} className="stacked-col">
-                  <div
-                    className="stack seg s1"
-                    style={{ height: `${(m.total / monthlyMax) * 80 + 10}%` }}
-                  />
-                  <span>{m.label}</span>
-                </div>
-              ))}
+              {monthlyTotals.map((m, idx) => {
+                const prev = idx > 0 ? monthlyTotals[idx - 1].total : null;
+                const delta = prev === null ? null : m.total - prev;
+                const deltaLabel =
+                  delta === null
+                    ? "Starting point"
+                    : `${delta >= 0 ? "+" : "-"}${formatCurrency(Math.abs(delta))} vs prev`;
+                return (
+                  <div key={m.key} className="monthly-spend-card">
+                    <div className="monthly-spend-top">
+                      <span className="monthly-spend-month">{m.label}</span>
+                      <span className="monthly-spend-value">{formatCurrency(m.total)}</span>
+                    </div>
+                    <div className="monthly-spend-track">
+                      <div
+                        className="monthly-spend-fill"
+                        style={{ width: `${(m.total / monthlyMax) * 100}%` }}
+                      />
+                    </div>
+                    <div
+                      className={`monthly-spend-delta ${
+                        delta === null
+                          ? "monthly-spend-delta-neutral"
+                          : delta >= 0
+                            ? "monthly-spend-delta-up"
+                            : "monthly-spend-delta-down"
+                      }`}
+                    >
+                      {deltaLabel}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -359,26 +410,36 @@ export default function GraphsPage() {
           <div className="chart-header">
             <div>
               <div className="chart-title">Top Categories</div>
-              <div className="chart-subtitle">Horizontal bars</div>
+              <div className="chart-subtitle">Share of monthly spend</div>
             </div>
             <span className="chart-chip">Ranked</span>
           </div>
           <div className="chart-body">
-            <div className="hbars">
+            <div className="ranked-categories">
               {topCategories.length === 0 && (
                 <div style={{ fontSize: 12, color: "#7b7b85" }}>
                   No category spending found for the selected month.
                 </div>
               )}
               {topCategories.map((citem, idx) => (
-                <div key={citem.label} className="hbar-row">
-                  <div className="hbar-label-row">
-                    <span>{citem.label}</span>
-                    <span>{formatCurrency(citem.total)}</span>
+                <div key={citem.label} className="ranked-category-card">
+                  <div className="ranked-category-head">
+                    <div className="ranked-category-meta">
+                      <span className={`rank-badge rank-badge-${(idx % 4) + 1}`}>
+                        {idx + 1}
+                      </span>
+                      <div>
+                        <div className="ranked-category-label">{citem.label}</div>
+                        <div className="ranked-category-share">
+                          {categorySum ? `${Math.round((citem.total / categorySum) * 100)}% of top spend` : "0% of top spend"}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="ranked-category-value">{formatCurrency(citem.total)}</div>
                   </div>
-                  <div className="hbar-track">
+                  <div className="ranked-bar-track">
                     <div
-                      className={`hbar-fill s${(idx % 4) + 1}`}
+                      className={`ranked-bar-fill ranked-bar-fill-${(idx % 4) + 1}`}
                       style={{
                         width: `${(citem.total / topCategoryMax) * 100}%`
                       }}
@@ -406,21 +467,36 @@ export default function GraphsPage() {
                 </div>
               )}
               {categoryMix.map((month) => (
-                <div key={month.key} className="mix-col">
+                <div key={month.key} className="mix-card">
+                  <div className="mix-card-top">
+                    <span className="mix-month">{month.label}</span>
+                    <span className="mix-total">{formatCurrency(month.total)}</span>
+                  </div>
                   <div className="mix-track">
                     {month.entries.map((entry, idx) => (
                       <div
                         key={`${month.key}-${entry.label}`}
                         className={`mix-seg s${(idx % 4) + 1}`}
                         style={{
-                          height: `${month.total ? (entry.total / month.total) * 100 : 0}%`
+                          width: `${month.total ? (entry.total / month.total) * 100 : 0}%`
                         }}
                         title={`${entry.label}: ${formatCurrency(entry.total)}`}
                       />
                     ))}
                   </div>
-                  <div className="mix-total">{formatCurrency(month.total)}</div>
-                  <span>{month.label}</span>
+                  <div className="mix-breakdown">
+                    {month.entries.map((entry, idx) => (
+                      <div key={`${month.key}-${entry.label}-legend`} className="mix-breakdown-row">
+                        <div className="mix-breakdown-label">
+                          <span className={`swatch s${(idx % 4) + 2}`} />
+                          <span>{entry.label}</span>
+                        </div>
+                        <span>
+                          {month.total ? `${Math.round((entry.total / month.total) * 100)}%` : "0%"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
